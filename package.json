@@ -1,0 +1,29 @@
+{
+  "name": "changelogplease",
+  "version": "0.0.0",
+  "description": "Generate changelogs from git commit messages",
+  "author": "Scott González <scott.gonzalez@gmail.com> (http://scottgonzalez.com)",
+  "license": "MIT",
+  "main": "index.js",
+  "homepage": "https://github.com/scottgonzalez/changelogplease",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/scottgonzalez/changelogplease.git"
+  },
+  "bugs": {
+    "url": "https://github.com/scottgonzalez/changelogplease/issues"
+  },
+  "keywords": [
+    "changelog",
+    "release"
+  ],
+  "scripts": {
+    "test": "nodeunit tests"
+  },
+  "dependencies": {
+    "git-tools": "0.0.8"
+  },
+  "devDependencies": {
+    "nodeunit": "0.8.6"
+  }
+}
