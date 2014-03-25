@@ -66,8 +66,8 @@ Changelog.prototype.parseCommits = function( commits ) {
 };
 
 Changelog.prototype.parseCommit = function( commit ) {
-	var ticketUrl = this.ticketUrl,
-		tickets = [];
+	var ticketUrl = this.ticketUrl;
+	var tickets = [];
 
 	// Sane global exec with iteration over matches
 	commit.replace(
@@ -89,14 +89,19 @@ Changelog.prototype.parseCommit = function( commit ) {
 		}
 	);
 
+	// Only keep the summary for the changelog; drop the body
+	var parsed = "* " + commit.split( /\r?\n/ )[ 0 ];
+
 	// Add in ticket references
 	// Leave __TICKETREF__ token in place so it's easy to find commits without tickets
 	if ( tickets.length ) {
-		commit = commit.replace( "__TICKETREF__", tickets.map(function( ticket ) {
+		parsed = parsed.replace( "__TICKETREF__", tickets.map(function( ticket ) {
 			return "[" + ticket.label + "](" + ticket.url + ")";
 		}).join( ", " ) );
 	}
 
-	// Only keep the summary for the changelog; drop the body
-	return "* " + commit.split( /\r?\n/ )[ 0 ];
+	// Remove cherry pick references
+	parsed = parsed.replace( / \(cherry picked from commit [^)]+\)/, "" );
+
+	return parsed;
 };

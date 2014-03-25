@@ -34,3 +34,10 @@ Fixes other/project#3456
 Closes gh-2000
 *****
 * Omega: Fix all the things ([#12](TICKET-URL/12), [#34](TICKET-URL/34), [other/project#3456](https://github.com/other/project/issues/3456), [000deb7](COMMIT-URL/000deb7000000000000000000000000000000000))
+=====
+cherryPick
+*****
+Beta: Fix something (cherry picked from commit 9999999000000000000000000000000000000000) (__TICKETREF__, [fff1234](COMMIT-URL/fff1234000000000000000000000000000000000))
+Fixes #55
+*****
+* Beta: Fix something ([#55](TICKET-URL/55), [fff1234](COMMIT-URL/fff1234000000000000000000000000000000000))

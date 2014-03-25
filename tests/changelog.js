@@ -85,7 +85,7 @@ exports.parseCommit = {
 	},
 
 	commits: function( test ) {
-		test.expect( 5 );
+		test.expect( 6 );
 
 		Object.keys( fixtures ).forEach(function( name ) {
 			test.strictEqual(
