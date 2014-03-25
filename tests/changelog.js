@@ -75,6 +75,65 @@ exports.getLog = {
 	}
 };
 
+exports.sort = {
+	default: function( test ) {
+		test.expect( 1 );
+
+		var changelog = new Changelog({});
+
+		var providedCommits = [
+			"alpha: foo",
+			"omega: foo",
+			"beta: foo",
+			"alpha: bar",
+			"beta: bar"
+		];
+		var sortedCommits = [
+			"alpha: bar",
+			"alpha: foo",
+			"beta: bar",
+			"beta: foo",
+			"omega: foo"
+		];
+
+		test.deepEqual( changelog.sort( providedCommits ), sortedCommits,
+			"Should sort commits alphabetically." );
+		test.done();
+	},
+
+	"no sort": function( test ) {
+		test.expect( 1 );
+
+		var providedCommits = [];
+
+		var changelog = new Changelog({
+			sort: false
+		});
+
+		test.strictEqual( changelog.sort( providedCommits ), providedCommits,
+			"Should not sort commits." );
+		test.done();
+	},
+
+	custom: function( test ) {
+		test.expect( 2 );
+
+		var providedCommits = [];
+		var sortedCommits = [];
+
+		var changelog = new Changelog({
+			sort: function( commits ) {
+				test.strictEqual( commits, providedCommits, "Should pass commits." );
+				return sortedCommits;
+			}
+		});
+
+		test.strictEqual( changelog.sort( providedCommits ), sortedCommits,
+			"Should pass commits from custom sorter." );
+		test.done();
+	}
+};
+
 exports.parseCommit = {
 	setUp: function( done ) {
 		this.changelog = new Changelog({
@@ -106,10 +165,11 @@ exports.parseCommits = {
 	},
 
 	commits: function( test ) {
-		test.expect( 4 );
+		test.expect( 5 );
 
 		var providedCommits = [ "a", "c", "b" ];
-		var parsedCommits = [ "a", "c", "b" ];
+		var parsedCommits = [ "x", "y", "z" ];
+		var sortedCommits = [ "z", "y", "x" ];
 		var providedCommitsLog = "__COMMIT__\n" +
 			providedCommits.join( "__COMMIT__\n" );
 		var callCount = 0;
@@ -125,9 +185,14 @@ exports.parseCommits = {
 			return parsedCommit;
 		};
 
+		this.changelog.sort = function( commits ) {
+			test.deepEqual( commits, parsedCommits, "Should pass parsed commits." );
+			return sortedCommits;
+		};
+
 		test.strictEqual(
 			this.changelog.parseCommits( providedCommitsLog ),
-			"a\nb\nc\n",
+			"z\ny\nx\n",
 			"Should parse and sort commits."
 		);
 		test.done();

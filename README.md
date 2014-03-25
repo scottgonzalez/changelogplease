@@ -31,6 +31,7 @@ var parsed = changelog({
   * `commitUrl (String)`: Template for commit URLs; `{id}` will be replaced with the commit hash.
   * `repo` (String): Path to the repository.
   * `committish` (String): The range of commits for the changelog.
+  * `sort` (Boolean, Function): Function for sorting commits. By default commits are sorted alphabetically so they are grouped by component. A value of `false` disables sorting.
 * `callback` (Function; `function( error, log )`): Function to invoke after generating the changelog.
   * `log` (String): Generated changelog, written in markdown.
 

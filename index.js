@@ -51,18 +51,29 @@ Changelog.prototype.getLog = function( callback ) {
 		callback );
 };
 
+Changelog.prototype.sort = function( commits ) {
+	if ( this.options.sort === false ) {
+		return commits;
+	}
+
+	if ( typeof this.options.sort === "function" ) {
+		return this.options.sort( commits );
+	}
+
+	return commits.sort();
+};
+
 Changelog.prototype.parseCommits = function( commits ) {
 	commits = commits.split( "__COMMIT__\n" );
 	commits.shift();
 
-	return commits
+	// Parse each individual commit
+	commits = commits.map( this.parseCommit );
 
-		// Parse each individual commit
-		.map( this.parseCommit )
+	// Sort commits
+	commits = this.sort( commits );
 
-		// Sort commits so that they're grouped by component
-		.sort()
-		.join( "\n" ) + "\n";
+	return commits.join( "\n" ) + "\n";
 };
 
 Changelog.prototype.parseCommit = function( commit ) {
