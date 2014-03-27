@@ -14,11 +14,18 @@ npm install changelogplease
 
 ```javascript
 var changelog = require( "changelogplease" );
-var parsed = changelog({
+changelog({
 	ticketUrl: "https://github.com/scottgonzalez/changelogplease/issues/{id}",
 	commitUrl: "https://github.com/scottgonzalez/changelogplease/commit/{id}",
 	repo: "/path/to/repo",
 	committish: "1.2.3..1.2.4"
+}, function( error, log ) {
+	if ( error ) {
+		console.log( error );
+		return;
+	}
+
+	console.log( log );
 });
 ```
 
