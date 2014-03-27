@@ -60,7 +60,18 @@ Changelog.prototype.sort = function( commits ) {
 		return this.options.sort( commits );
 	}
 
-	return commits.sort();
+	// Sort commits so that they're grouped by component
+	var component = /^(.+):/;
+	return commits.sort(function( a, b ) {
+		var aMatch = a.match( component ),
+			bMatch = b.match( component );
+
+		if ( aMatch && bMatch) {
+			return aMatch[ 1 ].localeCompare( bMatch[ 1 ] );
+		}
+
+		return a.localeCompare( b );
+	});
 };
 
 Changelog.prototype.parseCommits = function( commits ) {

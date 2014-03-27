@@ -89,10 +89,10 @@ exports.sort = {
 			"beta: bar"
 		];
 		var sortedCommits = [
-			"alpha: bar",
 			"alpha: foo",
-			"beta: bar",
+			"alpha: bar",
 			"beta: foo",
+			"beta: bar",
 			"omega: foo"
 		];
 
