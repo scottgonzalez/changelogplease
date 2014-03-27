@@ -106,10 +106,10 @@ exports.parseCommits = {
 	},
 
 	commits: function( test ) {
-		test.expect( 4 );
+		test.expect( 5 );
 
-		var providedCommits = [ "a", "c", "b" ];
-		var parsedCommits = [ "a", "c", "b" ];
+		var providedCommits = [ "a: y", "a: x", "c", "b" ];
+		var parsedCommits = [ "a: y", "a: x", "c", "b" ];
 		var providedCommitsLog = "__COMMIT__\n" +
 			providedCommits.join( "__COMMIT__\n" );
 		var callCount = 0;
@@ -127,7 +127,7 @@ exports.parseCommits = {
 
 		test.strictEqual(
 			this.changelog.parseCommits( providedCommitsLog ),
-			"a\nb\nc\n",
+			"a: y\na: x\nb\nc\n",
 			"Should parse and sort commits."
 		);
 		test.done();

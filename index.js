@@ -52,6 +52,7 @@ Changelog.prototype.getLog = function( callback ) {
 };
 
 Changelog.prototype.parseCommits = function( commits ) {
+	var component = /^(.+):/;
 	commits = commits.split( "__COMMIT__\n" );
 	commits.shift();
 
@@ -61,7 +62,14 @@ Changelog.prototype.parseCommits = function( commits ) {
 		.map( this.parseCommit )
 
 		// Sort commits so that they're grouped by component
-		.sort()
+		.sort(function( a, b ) {
+			var aMatch = a.match( component ),
+				bMatch = b.match( component );
+			if ( aMatch && bMatch) {
+				return aMatch[ 1 ].localeCompare( bMatch[ 1 ] );
+			}
+			return a.localeCompare( b );
+		})
 		.join( "\n" ) + "\n";
 };
 
