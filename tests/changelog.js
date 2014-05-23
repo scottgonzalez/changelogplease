@@ -82,15 +82,15 @@ exports.sort = {
 		var changelog = new Changelog({});
 
 		var providedCommits = [
-			"alpha: foo",
+			"alpha: foo:foo",
 			"omega: foo",
 			"beta: foo",
-			"alpha: bar",
+			"alpha: bar:bar",
 			"beta: bar"
 		];
 		var sortedCommits = [
-			"alpha: foo",
-			"alpha: bar",
+			"alpha: foo:foo",
+			"alpha: bar:bar",
 			"beta: foo",
 			"beta: bar",
 			"omega: foo"
