@@ -17,6 +17,64 @@ function Changelog( options ) {
 	this.options = options;
 	this.repo = new Repo( this.options.repo );
 
+	if ( options.issueTracker ) {
+		this.issueTracker = options.issueTracker;
+	} else {
+		this.issueTracker = "github";
+	}
+
+	switch ( this.issueTracker ) {
+		case "github":
+			Changelog.prototype.getTicketRefs = function (commit) {
+				var ticketUrl = this.ticketUrl;
+				var tickets = [];
+
+				// Sane global exec with iteration over matches
+				commit.replace(
+					/Fix(?:e[sd])? ((?:[a-zA-Z0-9_-]{1,39}\/[a-zA-Z0-9_-]{1,100}#)|#|gh-)(\d+)/g,
+					function ( match, refType, ticketId ) {
+						var ticketRef = {
+							url: ticketUrl( ticketId ),
+							label: "#" + ticketId
+						};
+
+						// If the refType has anything before the #, assume it's a GitHub ref
+						if (/.#$/.test( refType )) {
+							refType = refType.replace(/#$/, "");
+							ticketRef.url = "https://github.com/" + refType + "/issues/" + ticketId;
+							ticketRef.label = refType + ticketRef.label;
+						}
+
+						tickets.push(ticketRef);
+					}
+				);
+				return tickets;
+			};
+			break;
+
+		case "jira":
+			Changelog.prototype.getTicketRefs = function ( commit ) {
+				var ticketUrl = this.ticketUrl;
+				var tickets = [];
+
+				// Sane global exec with iteration over matches
+				commit.replace(
+					/Fix(?:e[sd])? ((?:([A-Z]{1,10})-?)[A-Z]+-\d+)/g,
+					function ( match, ticketId ) {
+						var ticketRef = {
+							url: ticketUrl( ticketId ),
+							label: ticketId
+						};
+
+						tickets.push( ticketRef )
+					}
+				);
+
+				return tickets;
+			};
+			break;
+	};
+
 	// Bind all methods to the instance
 	for ( var method in this ) {
 		if ( typeof this[ method ] === "function" ) {
@@ -87,29 +145,10 @@ Changelog.prototype.parseCommits = function( commits ) {
 	return commits.join( "\n" ) + "\n";
 };
 
+
+
 Changelog.prototype.parseCommit = function( commit ) {
-	var ticketUrl = this.ticketUrl;
-	var tickets = [];
-
-	// Sane global exec with iteration over matches
-	commit.replace(
-		/Fix(?:e[sd])? ((?:[a-zA-Z0-9_-]{1,39}\/[a-zA-Z0-9_-]{1,100}#)|#|gh-)(\d+)/g,
-		function( match, refType, ticketId ) {
-			var ticketRef = {
-				url: ticketUrl( ticketId ),
-				label: "#" + ticketId
-			};
-
-			// If the refType has anything before the #, assume it's a GitHub ref
-			if ( /.#$/.test( refType ) ) {
-				refType = refType.replace( /#$/, "" );
-				ticketRef.url = "https://github.com/" + refType + "/issues/" + ticketId;
-				ticketRef.label = refType + ticketRef.label;
-			}
-
-			tickets.push( ticketRef );
-		}
-	);
+	var tickets = this.getTicketRefs( commit );
 
 	// Only keep the summary for the changelog; drop the body
 	var parsed = "* " + commit.split( /\r?\n/ )[ 0 ];
