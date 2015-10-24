@@ -17,63 +17,37 @@ function Changelog( options ) {
 	this.options = options;
 	this.repo = new Repo( this.options.repo );
 
-	if ( options.issueTracker ) {
-		this.issueTracker = options.issueTracker;
+	var ticketTypes;
+	if ( options.ticketTypes ) {
+		ticketTypes = options.ticketTypes;
 	} else {
-		this.issueTracker = "github";
+		ticketTypes = [ "github" ];
 	}
 
-	switch ( this.issueTracker ) {
-		case "github":
-			Changelog.prototype.getTicketRefs = function (commit) {
-				var ticketUrl = this.ticketUrl;
-				var tickets = [];
+	this.ticketTypes = [];
+	// Re-order ticketTypes according to the key order in Changelog.ticketParsers
+	Object.keys( Changelog.ticketParsers).forEach(
+		function( key ) {
+			if ( ticketTypes.indexOf( key ) != -1 ) {
+				this.ticketTypes.push( key );
+			}
+		}.bind(this)
+	);
 
-				// Sane global exec with iteration over matches
-				commit.replace(
-					/Fix(?:e[sd])? ((?:[a-zA-Z0-9_-]{1,39}\/[a-zA-Z0-9_-]{1,100}#)|#|gh-)(\d+)/g,
-					function ( match, refType, ticketId ) {
-						var ticketRef = {
-							url: ticketUrl( ticketId ),
-							label: "#" + ticketId
-						};
-
-						// If the refType has anything before the #, assume it's a GitHub ref
-						if (/.#$/.test( refType )) {
-							refType = refType.replace(/#$/, "");
-							ticketRef.url = "https://github.com/" + refType + "/issues/" + ticketId;
-							ticketRef.label = refType + ticketRef.label;
-						}
-
-						tickets.push(ticketRef);
-					}
-				);
-				return tickets;
-			};
-			break;
-
-		case "jira":
-			Changelog.prototype.getTicketRefs = function ( commit ) {
-				var ticketUrl = this.ticketUrl;
-				var tickets = [];
-
-				// Sane global exec with iteration over matches
-				commit.replace(
-					/Fix(?:e[sd])? ((?:([A-Z]{1,10})-?)[A-Z]+-\d+)/g,
-					function ( match, ticketId ) {
-						var ticketRef = {
-							url: ticketUrl( ticketId ),
-							label: ticketId
-						};
-
-						tickets.push( ticketRef )
-					}
-				);
-
-				return tickets;
-			};
-			break;
-	};
+	if ( "string" === typeof options.ticketUrl ) {
+		// backward compatibility
+		if ( this.ticketTypes.length > 1 ) {
+			throw new Error(
+				this.ticketTypes.length +
+				" ticket types were sent but only one ticket url template was. " +
+				"[ticketUrl should be an Object]"
+			);
+		}
+		this.ticketUrlTemplates = {};
+		this.ticketUrlTemplates[ this.ticketTypes[ 0 ] ] = options.ticketUrl;
+	} else {
+		this.ticketUrlTemplates = options.ticketUrl;
+	}
 
 	// Bind all methods to the instance
 	for ( var method in this ) {
@@ -82,6 +56,55 @@ function Changelog( options ) {
 		}
 	}
 }
+
+Changelog.ticketParsers = {
+	// Order of keys is important!
+	// When passed several ticketTypes, they will be re-ordered in the order of the keys of this map
+	// This works around github's (or other) regex to be greedy
+	jira: function ( commit, ticketUrl ) {
+		var tickets = [];
+
+		// Sane global exec with iteration over matches
+		commit.replace(
+			/Fix(?:e[sd])? ((?:([A-Z]{1,10})-?)[A-Z]+-\d+)/g,
+			function ( match, ticketId ) {
+				var ticketRef = {
+					url: ticketUrl( ticketId ),
+					label: ticketId
+				};
+
+				tickets.push( ticketRef )
+			}
+		);
+
+		return tickets;
+	},
+
+	github: function ( commit, ticketUrl ) {
+		var tickets = [];
+
+		// Sane global exec with iteration over matches
+		commit.replace(
+			/Fix(?:e[sd])? ((?:[a-zA-Z0-9_-]{1,39}\/[a-zA-Z0-9_-]{1,100}#)|#|gh-)(\d+)/g,
+			function ( match, refType, ticketId ) {
+				var ticketRef = {
+					url: ticketUrl( ticketId ),
+					label: "#" + ticketId
+				};
+
+				// If the refType has anything before the #, assume it's a GitHub ref
+				if (/.#$/.test( refType )) {
+					refType = refType.replace(/#$/, "");
+					ticketRef.url = "https://github.com/" + refType + "/issues/" + ticketId;
+					ticketRef.label = refType + ticketRef.label;
+				}
+
+				tickets.push(ticketRef);
+			}
+		);
+		return tickets;
+	}
+};
 
 Changelog.prototype.parse = function( callback ) {
 	this.getLog(function( error, log ) {
@@ -93,8 +116,18 @@ Changelog.prototype.parse = function( callback ) {
 	}.bind( this ));
 };
 
-Changelog.prototype.ticketUrl = function( id ) {
-	return this.options.ticketUrl.replace( "{id}", id );
+Changelog.prototype.ticketUrl = function( id, ticketType ) {
+	if ( !ticketType ) {
+		ticketType = this.ticketTypes[0];
+	}
+
+	return this.ticketUrlTemplates[ ticketType ].replace( "{id}", id );
+};
+
+Changelog.ticketUrlFactory = function( ticketType, thisArg ) {
+	return function( id ) {
+		return this.ticketUrl( id, ticketType );
+	}.bind( thisArg );
 };
 
 Changelog.prototype.getLog = function( callback ) {
@@ -145,10 +178,17 @@ Changelog.prototype.parseCommits = function( commits ) {
 	return commits.join( "\n" ) + "\n";
 };
 
-
-
 Changelog.prototype.parseCommit = function( commit ) {
-	var tickets = this.getTicketRefs( commit );
+	var tickets = [];
+
+	this.ticketTypes.forEach( function( ticketType ) {
+		tickets = tickets.concat(
+			Changelog.ticketParsers[ ticketType ](
+				commit,
+				Changelog.ticketUrlFactory( ticketType, this )
+			)
+		);
+	}.bind( this ));
 
 	// Only keep the summary for the changelog; drop the body
 	var parsed = "* " + commit.split( /\r?\n/ )[ 0 ];

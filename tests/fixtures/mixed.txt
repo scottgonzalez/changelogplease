@@ -1,0 +1,36 @@
+noRef
+*****
+Alpha: Fixed something without a ticket! (__TICKETREF__, [aaa1111](COMMIT-URL/aaa1111000000000000000000000000000000000))
+*****
+* Alpha: Fixed something without a ticket! (__TICKETREF__, [aaa1111](COMMIT-URL/aaa1111000000000000000000000000000000000))
+=====
+githubFixesHash
+*****
+Alpha: Did stuff (__TICKETREF__, [abc123](COMMIT-URL/abc1234000000000000000000000000000000000))
+Fixes #123
+*****
+* Alpha: Did stuff ([#123](GITHUB-TICKET-URL/123), [abc123](COMMIT-URL/abc1234000000000000000000000000000000000))
+=====
+jiraFixesHash
+*****
+Alpha: Did stuff (__TICKETREF__, [abc123](COMMIT-URL/abc1234000000000000000000000000000000000))
+Fixes JIRA-123
+*****
+* Alpha: Did stuff ([JIRA-123](JIRA-TICKET-URL/JIRA-123), [abc123](COMMIT-URL/abc1234000000000000000000000000000000000))
+=====
+multiRef
+*****
+Omega: Fix all the things (__TICKETREF__, [000deb7](COMMIT-URL/000deb7000000000000000000000000000000000))
+Fixes #12
+Fixes JIRA-34
+Fixes other/project#3456
+Closes gh-2000
+*****
+* Omega: Fix all the things ([JIRA-34](JIRA-TICKET-URL/JIRA-34), [#12](GITHUB-TICKET-URL/12), [other/project#3456](https://github.com/other/project/issues/3456), [000deb7](COMMIT-URL/000deb7000000000000000000000000000000000))
+=====
+cherryPick
+*****
+Beta: Fix something (cherry picked from commit 9999999000000000000000000000000000000000) (__TICKETREF__, [fff1234](COMMIT-URL/fff1234000000000000000000000000000000000))
+Fixes #55
+*****
+* Beta: Fix something ([#55](GITHUB-TICKET-URL/55), [fff1234](COMMIT-URL/fff1234000000000000000000000000000000000))

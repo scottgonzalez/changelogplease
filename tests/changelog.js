@@ -1,6 +1,9 @@
 var fs = require( "fs" ),
 	Changelog = require( ".." ).Changelog,
-	fixtures = require( "./fixtures/commits" );
+	parseFixture = require( "./fixtures/parseFixture"),
+	githubFixtures = parseFixture( "github" ),
+	jiraFixtures = parseFixture( "jira" ),
+	mixedFixtures = parseFixture( "mixed" );
 
 exports.ticketUrl = {
 	setUp: function( done ) {
@@ -134,7 +137,7 @@ exports.sort = {
 	}
 };
 
-exports.parseCommit = {
+exports.parseGithubCommit = {
 	setUp: function( done ) {
 		this.changelog = new Changelog({
 			ticketUrl: "TICKET-URL/{id}",
@@ -146,10 +149,10 @@ exports.parseCommit = {
 	commits: function( test ) {
 		test.expect( 6 );
 
-		Object.keys( fixtures ).forEach(function( name ) {
+		Object.keys( githubFixtures ).forEach(function( name ) {
 			test.strictEqual(
-				this.changelog.parseCommit( fixtures[ name ].input ),
-				fixtures[ name ].output,
+				this.changelog.parseCommit( githubFixtures[ name ].input ),
+				githubFixtures[ name ].output,
 				name
 			);
 		}.bind( this ));
@@ -157,6 +160,60 @@ exports.parseCommit = {
 		test.done();
 	}
 };
+
+exports.parseJiraCommit = {
+	setUp: function( done ) {
+		this.changelog = new Changelog({
+			ticketTypes: [ "jira" ],
+			ticketUrl: "TICKET-URL/{id}",
+			commitUrl: "COMMIT-URL/{id}"
+		});
+		done();
+	},
+
+	commits: function( test ) {
+		test.expect( 4 );
+
+		Object.keys( jiraFixtures ).forEach(function( name ) {
+			test.strictEqual(
+				this.changelog.parseCommit( jiraFixtures[ name ].input ),
+				jiraFixtures[ name ].output,
+				name
+			);
+		}.bind( this ));
+
+		test.done();
+	}
+};
+
+exports.parseMixedCommit = {
+	setUp: function( done ) {
+		this.changelog = new Changelog({
+			ticketTypes: [ "github", "jira" ],
+			ticketUrl: {
+				"github": "GITHUB-TICKET-URL/{id}",
+				"jira": "JIRA-TICKET-URL/{id}"
+			},
+			commitUrl: "COMMIT-URL/{id}"
+		});
+		done();
+	},
+
+	commits: function( test ) {
+		test.expect( 5 );
+
+		Object.keys( mixedFixtures ).forEach(function( name ) {
+			test.strictEqual(
+				this.changelog.parseCommit( mixedFixtures[ name ].input ),
+				mixedFixtures[ name ].output,
+				name
+			);
+		}.bind( this ));
+
+		test.done();
+	}
+};
+
 
 exports.parseCommits = {
 	setUp: function( done ) {
