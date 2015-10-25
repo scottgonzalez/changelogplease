@@ -34,7 +34,7 @@ function Changelog( options ) {
 		}.bind(this)
 	);
 
-	if ( "string" === typeof options.ticketUrl ) {
+	if ( typeof options.ticketUrl === "string" ) {
 		this.ticketUrlTemplates = {};
 		this.ticketUrlTemplates[ this.ticketTypes[ 0 ] ] = options.ticketUrl;
 	} else {
