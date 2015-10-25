@@ -35,14 +35,6 @@ function Changelog( options ) {
 	);
 
 	if ( "string" === typeof options.ticketUrl ) {
-		// backward compatibility
-		if ( this.ticketTypes.length > 1 ) {
-			throw new Error(
-				this.ticketTypes.length +
-				" ticket types were sent but only one ticket url template was. " +
-				"[ticketUrl should be an Object]"
-			);
-		}
 		this.ticketUrlTemplates = {};
 		this.ticketUrlTemplates[ this.ticketTypes[ 0 ] ] = options.ticketUrl;
 	} else {
