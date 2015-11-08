@@ -189,7 +189,7 @@ exports.parseJiraCommit = {
 exports.parseMixedCommit = {
 	setUp: function( done ) {
 		this.changelog = new Changelog({
-			ticketTypes: [ "github", "jira" ],
+			ticketTypes: [ "jira", "github" ],
 			ticketUrl: {
 				"github": "GITHUB-TICKET-URL/{id}",
 				"jira": "JIRA-TICKET-URL/{id}"

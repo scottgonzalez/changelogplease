@@ -17,22 +17,11 @@ function Changelog( options ) {
 	this.options = options;
 	this.repo = new Repo( this.options.repo );
 
-	var ticketTypes;
 	if ( options.ticketTypes ) {
-		ticketTypes = options.ticketTypes;
+		this.ticketTypes = options.ticketTypes;
 	} else {
-		ticketTypes = [ "github" ];
+		this.ticketTypes = [ "github" ];
 	}
-
-	this.ticketTypes = [];
-	// Re-order ticketTypes according to the key order in Changelog.ticketParsers
-	Object.keys( Changelog.ticketParsers).forEach(
-		function( key ) {
-			if ( ticketTypes.indexOf( key ) != -1 ) {
-				this.ticketTypes.push( key );
-			}
-		}.bind(this)
-	);
 
 	if ( typeof options.ticketUrl === "string" ) {
 		this.ticketUrlTemplates = {};
