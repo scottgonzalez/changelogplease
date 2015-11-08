@@ -116,12 +116,6 @@ Changelog.prototype.ticketUrl = function( id, ticketType ) {
 	return this.ticketUrlTemplates[ ticketType ].replace( "{id}", id );
 };
 
-Changelog.ticketUrlFactory = function( ticketType, thisArg ) {
-	return function( id ) {
-		return this.ticketUrl( id, ticketType );
-	}.bind( thisArg );
-};
-
 Changelog.prototype.getLog = function( callback ) {
 	var commitUrl = this.options.commitUrl.replace( "{id}", "%H" );
 
@@ -177,7 +171,9 @@ Changelog.prototype.parseCommit = function( commit ) {
 		tickets = tickets.concat(
 			Changelog.ticketParsers[ ticketType ](
 				commit,
-				Changelog.ticketUrlFactory( ticketType, this )
+				function( id ) {
+					return this.ticketUrl(id, ticketType);
+				}.bind(this)
 			)
 		);
 	}.bind( this ));
