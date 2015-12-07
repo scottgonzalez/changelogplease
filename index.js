@@ -17,18 +17,21 @@ function Changelog( options ) {
 	this.options = options;
 	this.repo = new Repo( this.options.repo );
 
-	if ( options.ticketTypes ) {
-		this.ticketTypes = options.ticketTypes;
-	} else {
-		this.ticketTypes = [ "github" ];
+	if ( !this.options.ticketTypes ) {
+
+		// GitHub is the default because it's common
+		// and also handles the generic form of #XXX
+		this.options.ticketTypes = [ "github" ];
 	}
 
-	if ( typeof options.ticketUrl === "string" ) {
-		this.ticketUrlTemplates = {};
-		this.ticketUrlTemplates[ this.ticketTypes[ 0 ] ] = options.ticketUrl;
-	} else {
-		this.ticketUrlTemplates = options.ticketUrl;
+	// Normalize ticketUrl to a hash
+	if ( typeof this.options.ticketUrl === "string" ) {
+		this.options.ticketUrl = {
+			_default: this.options.ticketUrl
+		};
 	}
+
+	this.createTicketUrlParsers();
 
 	// Bind all methods to the instance
 	for ( var method in this ) {
@@ -39,28 +42,6 @@ function Changelog( options ) {
 }
 
 Changelog.ticketParsers = {
-	// Order of keys is important!
-	// When passed several ticketTypes, they will be re-ordered in the order of the keys of this map
-	// This works around github's (or other) regex to be greedy
-	jira: function ( commit, ticketUrl ) {
-		var tickets = [];
-
-		// Sane global exec with iteration over matches
-		commit.replace(
-			/Fix(?:e[sd])? ((?:([A-Z]{1,10})-?)[A-Z]+-\d+)/g,
-			function ( match, ticketId ) {
-				var ticketRef = {
-					url: ticketUrl( ticketId ),
-					label: ticketId
-				};
-
-				tickets.push( ticketRef )
-			}
-		);
-
-		return tickets;
-	},
-
 	github: function ( commit, ticketUrl ) {
 		var tickets = [];
 
@@ -74,17 +55,46 @@ Changelog.ticketParsers = {
 				};
 
 				// If the refType has anything before the #, assume it's a GitHub ref
-				if (/.#$/.test( refType )) {
-					refType = refType.replace(/#$/, "");
+				if ( /.#$/.test( refType ) ) {
+					refType = refType.replace( /#$/, "" );
 					ticketRef.url = "https://github.com/" + refType + "/issues/" + ticketId;
 					ticketRef.label = refType + ticketRef.label;
 				}
 
-				tickets.push(ticketRef);
+				tickets.push( ticketRef );
 			}
 		);
+
+		return tickets;
+	},
+
+	jira: function ( commit, ticketUrl ) {
+		var tickets = [];
+
+		// Sane global exec with iteration over matches
+		commit.replace(
+			/Fix(?:e[sd])? ([A-Z][A-Z0-9_]+-\d+)/g,
+			function ( match, ticketId ) {
+				var ticketRef = {
+					url: ticketUrl( ticketId ),
+					label: ticketId
+				};
+
+				tickets.push( ticketRef );
+			}
+		);
+
 		return tickets;
 	}
+};
+
+Changelog.prototype.createTicketUrlParsers = function() {
+	this.ticketUrls = {};
+	Object.keys( this.options.ticketUrl ).forEach(function( type ) {
+		this.ticketUrls[ type ] = function( id ) {
+			return this.options.ticketUrl[ type ].replace( "{id}", id );
+		}.bind( this );
+	}, this );
 };
 
 Changelog.prototype.parse = function( callback ) {
@@ -95,14 +105,6 @@ Changelog.prototype.parse = function( callback ) {
 
 		callback( null, this.parseCommits( log ) );
 	}.bind( this ));
-};
-
-Changelog.prototype.ticketUrl = function( id, ticketType ) {
-	if ( !ticketType ) {
-		ticketType = this.ticketTypes[0];
-	}
-
-	return this.ticketUrlTemplates[ ticketType ].replace( "{id}", id );
 };
 
 Changelog.prototype.getLog = function( callback ) {
@@ -156,16 +158,14 @@ Changelog.prototype.parseCommits = function( commits ) {
 Changelog.prototype.parseCommit = function( commit ) {
 	var tickets = [];
 
-	this.ticketTypes.forEach( function( ticketType ) {
+	this.options.ticketTypes.forEach( function( ticketType ) {
 		tickets = tickets.concat(
 			Changelog.ticketParsers[ ticketType ](
 				commit,
-				function( id ) {
-					return this.ticketUrl(id, ticketType);
-				}.bind(this)
+				this.ticketUrls[ ticketType ] || this.ticketUrls._default
 			)
 		);
-	}.bind( this ));
+	}, this );
 
 	// Only keep the summary for the changelog; drop the body
 	var parsed = "* " + commit.split( /\r?\n/ )[ 0 ];

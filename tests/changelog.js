@@ -5,27 +5,10 @@ var fs = require( "fs" ),
 	jiraFixtures = parseFixture( "jira" ),
 	mixedFixtures = parseFixture( "mixed" );
 
-exports.ticketUrl = {
-	setUp: function( done ) {
-		this.changelog = new Changelog({
-			ticketUrl: "http://example.com/ticket/{id}/"
-		});
-		done();
-	},
-
-	replacement: function( test ) {
-		test.expect( 1 );
-
-		var url = this.changelog.ticketUrl( 37 );
-		test.strictEqual( url, "http://example.com/ticket/37/",
-			"Ticket id should be inserted." );
-		test.done();
-	}
-};
-
 exports.getLog = {
 	setUp: function( done ) {
 		this.changelog = new Changelog({
+			ticketUrl: "TICKET-URL/{id}",
 			commitUrl: "http://example.com/commit/{id}/",
 			committish: "alpha..omega"
 		});
@@ -82,7 +65,9 @@ exports.sort = {
 	default: function( test ) {
 		test.expect( 1 );
 
-		var changelog = new Changelog({});
+		var changelog = new Changelog({
+			ticketUrl: "TICKET-URL/{id}"
+		});
 
 		var providedCommits = [
 			"alpha: foo:foo",
@@ -110,6 +95,7 @@ exports.sort = {
 		var providedCommits = [];
 
 		var changelog = new Changelog({
+			ticketUrl: "TICKET-URL/{id}",
 			sort: false
 		});
 
@@ -125,6 +111,7 @@ exports.sort = {
 		var sortedCommits = [];
 
 		var changelog = new Changelog({
+			ticketUrl: "TICKET-URL/{id}",
 			sort: function( commits ) {
 				test.strictEqual( commits, providedCommits, "Should pass commits." );
 				return sortedCommits;
@@ -217,7 +204,9 @@ exports.parseMixedCommit = {
 
 exports.parseCommits = {
 	setUp: function( done ) {
-		this.changelog = new Changelog({});
+		this.changelog = new Changelog({
+			ticketUrl: "TICKET-URL/{id}"
+		});
 		done();
 	},
 
@@ -258,7 +247,9 @@ exports.parseCommits = {
 
 exports.parse = {
 	setUp: function( done ) {
-		this.changelog = new Changelog({});
+		this.changelog = new Changelog({
+			ticketUrl: "TICKET-URL/{id}"
+		});
 		done();
 	},
 
