@@ -34,7 +34,7 @@ changelog({
 ### changelog( options, callback )
 
 * `options` (Object): Options for creating the changelog.
-  * `ticketTypes` (Array): Which ticket types to look for when parsing logs. See [#changelog-ticketparsers](`Changelog.ticketParsers`) for a list of available types. Defaults to `["github"]`.
+  * `ticketTypes` (Array): Which ticket types to look for when parsing logs. See [`Changelog.ticketParsers`](#changelogticketparsers) for a list of available types. Defaults to `["github"]`.
   * `ticketUrl` (String or Object): Template(s) for ticket/issue URLs; `{id}` will be replaced with the ticket ID. When specifying multiple values for `ticketTypes`, `ticketUrl` must be an object with the ticket type as the keys and the URL templates as the values.
   * `commitUrl (String)`: Template for commit URLs; `{id}` will be replaced with the commit hash.
   * `repo` (String): Path to the repository.
