@@ -82,7 +82,7 @@ The function must return an array of objects each containing two values:
 
 ## License
 
-Copyright 2014 Scott González. Released under the terms of the MIT license.
+Copyright Scott González. Released under the terms of the MIT license.
 
 ---
 
